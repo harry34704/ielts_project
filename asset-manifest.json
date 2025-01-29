@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/ielts-practice-app/static/css/main.f855e6bc.css",
-    "main.js": "/ielts-practice-app/static/js/main.b86949a1.js",
-    "static/js/453.890362e9.chunk.js": "/ielts-practice-app/static/js/453.890362e9.chunk.js",
-    "index.html": "/ielts-practice-app/index.html",
-    "main.f855e6bc.css.map": "/ielts-practice-app/static/css/main.f855e6bc.css.map",
-    "main.b86949a1.js.map": "/ielts-practice-app/static/js/main.b86949a1.js.map",
-    "453.890362e9.chunk.js.map": "/ielts-practice-app/static/js/453.890362e9.chunk.js.map"
+    "main.css": "https://harry34704.github.io/ielts_project/static/css/main.f855e6bc.css",
+    "main.js": "https://harry34704.github.io/ielts_project/static/js/main.e3705317.js",
+    "static/js/453.890362e9.chunk.js": "https://harry34704.github.io/ielts_project/static/js/453.890362e9.chunk.js",
+    "index.html": "https://harry34704.github.io/ielts_project/index.html",
+    "main.f855e6bc.css.map": "https://harry34704.github.io/ielts_project/static/css/main.f855e6bc.css.map",
+    "main.e3705317.js.map": "https://harry34704.github.io/ielts_project/static/js/main.e3705317.js.map",
+    "453.890362e9.chunk.js.map": "https://harry34704.github.io/ielts_project/static/js/453.890362e9.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f855e6bc.css",
-    "static/js/main.b86949a1.js"
+    "static/js/main.e3705317.js"
   ]
 }
