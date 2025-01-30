@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "https://harry34704.github.io/ielts_project/static/css/main.e6c13ad2.css",
-    "main.js": "https://harry34704.github.io/ielts_project/static/js/main.b1d1267a.js",
+    "main.js": "https://harry34704.github.io/ielts_project/static/js/main.b830dcde.js",
     "static/js/453.b9ece32b.chunk.js": "https://harry34704.github.io/ielts_project/static/js/453.b9ece32b.chunk.js",
     "index.html": "https://harry34704.github.io/ielts_project/index.html",
     "main.e6c13ad2.css.map": "https://harry34704.github.io/ielts_project/static/css/main.e6c13ad2.css.map",
-    "main.b1d1267a.js.map": "https://harry34704.github.io/ielts_project/static/js/main.b1d1267a.js.map",
+    "main.b830dcde.js.map": "https://harry34704.github.io/ielts_project/static/js/main.b830dcde.js.map",
     "453.b9ece32b.chunk.js.map": "https://harry34704.github.io/ielts_project/static/js/453.b9ece32b.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.b1d1267a.js"
+    "static/js/main.b830dcde.js"
   ]
 }
