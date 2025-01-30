@@ -1,0 +1,13 @@
+fastapi
+python-multipart  # needed for OAuth2PasswordRequestForm
+passlib[bcrypt]   # you're using this for password hashing
+sqlalchemy
+transformers
+torch  # required by transformers
+uvicorn
+nltk
+language-tool-python  # also adding this since it's imported
+SpeechRecognition
+PyAudio  # required for speech recognition
+python-dotenv
+openai
