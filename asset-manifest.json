@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "https://harry34704.github.io/ielts_project/static/css/main.f855e6bc.css",
-    "main.js": "https://harry34704.github.io/ielts_project/static/js/main.e3705317.js",
-    "static/js/453.890362e9.chunk.js": "https://harry34704.github.io/ielts_project/static/js/453.890362e9.chunk.js",
+    "main.js": "https://harry34704.github.io/ielts_project/static/js/main.bbfdad2d.js",
+    "static/js/453.b9ece32b.chunk.js": "https://harry34704.github.io/ielts_project/static/js/453.b9ece32b.chunk.js",
     "index.html": "https://harry34704.github.io/ielts_project/index.html",
     "main.f855e6bc.css.map": "https://harry34704.github.io/ielts_project/static/css/main.f855e6bc.css.map",
-    "main.e3705317.js.map": "https://harry34704.github.io/ielts_project/static/js/main.e3705317.js.map",
-    "453.890362e9.chunk.js.map": "https://harry34704.github.io/ielts_project/static/js/453.890362e9.chunk.js.map"
+    "main.bbfdad2d.js.map": "https://harry34704.github.io/ielts_project/static/js/main.bbfdad2d.js.map",
+    "453.b9ece32b.chunk.js.map": "https://harry34704.github.io/ielts_project/static/js/453.b9ece32b.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f855e6bc.css",
-    "static/js/main.e3705317.js"
+    "static/js/main.bbfdad2d.js"
   ]
 }
