@@ -1,26 +1,21 @@
-import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 
 export const useApi = () => {
-  const { setLoading, handleError, showNotification } = useApp();
-  const [data, setData] = useState(null);
+  const { setLoading, setError } = useApp();
 
-  const callApi = async (apiFunction, successMessage) => {
+  const callApi = async (apiFunction, ...args) => {
     setLoading(true);
+    setError(null);
     try {
-      const result = await apiFunction();
-      setData(result);
-      if (successMessage) {
-        showNotification(successMessage);
-      }
+      const result = await apiFunction(...args);
       return result;
     } catch (error) {
-      handleError(error);
-      return null;
+      setError(error.message);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  return { data, callApi };
+  return { callApi };
 }; 

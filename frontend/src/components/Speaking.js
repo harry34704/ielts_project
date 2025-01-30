@@ -1,277 +1,253 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Container, Box, Typography, Grid, Card, CardContent,
-  Button, List, ListItem, ListItemText, ListItemIcon,
-  Stepper, Step, StepLabel, Paper 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Container,
+  Typography,
+  Button,
+  Box,
+  Paper,
+  CircularProgress,
+  Grid
 } from '@mui/material';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import { styled } from '@mui/material/styles';
+import { useScore } from '../context/ScoreContext';
 import { useApi } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
-import TaskCard from './common/TaskCard';
-import Timer from './common/Timer';
-import RecordButton from './common/RecordButton';
-import ScoreDisplay from './common/ScoreDisplay';
-import { aiService } from '../services/aiService';
+import { RecordingService } from '../services/recordingService';
+import AudioPlayer from './AudioPlayer';
+import SpeakingFeedback from './SpeakingFeedback';
+import { speakingTasks } from '../data/speakingTasks';
+import { getPronunciationScore } from '../services/pronunciationService';
+
+const Word = styled('span')(({ theme, status }) => ({
+  padding: '2px 4px',
+  margin: '0 2px',
+  borderRadius: '4px',
+  display: 'inline-block',
+  backgroundColor: status === 'correct' ? '#e8f5e9' :
+                  status === 'incorrect' ? '#ffebee' :
+                  status === 'current' ? '#e3f2fd' : 'transparent',
+  color: status === 'correct' ? '#2e7d32' :
+         status === 'incorrect' ? '#c62828' : 'inherit'
+}));
 
 const Speaking = () => {
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [activeStep, setActiveStep] = useState(0);
-  const [recording, setRecording] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const { addScore } = useScore();
+  const { loading } = useApp();
   const { callApi } = useApi();
-  const { showNotification } = useApp();
+  const [isRecording, setIsRecording] = useState(false);
+  const [currentTask, setCurrentTask] = useState(null);
+  const [spokenWords, setSpokenWords] = useState([]);
+  const [scoredWords, setScoredWords] = useState({});
+  const recognitionRef = useRef(null);
+  const [recordingService] = useState(new RecordingService());
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [feedback, setFeedback] = useState(null);
 
-  const speakingTasks = [
+  const tasks = [
     {
       id: 1,
-      title: "Basic Conversation - Beginner",
-      description: "Practice basic conversation skills with common topics",
-      level: 'beginner',
-      timeLimit: 5,
+      title: 'Describe Your Hometown',
+      description: 'Talk about your hometown and what makes it special.',
       parts: [
-        {
-          title: "Introduction",
-          questions: [
-            "What is your name?",
-            "Where are you from?",
-            "What do you do?",
-            "Tell me about your family"
-          ],
-          duration: 2
-        },
-        {
-          title: "Hobbies",
-          questions: [
-            "What do you like to do in your free time?",
-            "How often do you do these activities?",
-            "Who do you usually do these activities with?",
-            "Why do you enjoy these activities?"
-          ],
-          duration: 3
-        }
+        'Describe where your hometown is located',
+        'Talk about the weather and climate',
+        'Discuss what you like most about it',
+        'Explain any changes you have seen'
+      ],
+      expectedKeywords: [
+        'located', 'city', 'town', 'weather', 'climate', 'people',
+        'community', 'changes', 'development', 'favorite'
       ]
     },
     {
       id: 2,
-      title: "Topic Discussion - Intermediate",
-      description: "Discuss various topics with more complex vocabulary",
-      level: 'intermediate',
-      timeLimit: 8,
+      title: 'Your Favorite Book',
+      description: 'Describe a book that has made an impact on you.',
       parts: [
-        {
-          title: "Environmental Issues",
-          questions: [
-            "What are the main environmental problems in your area?",
-            "How can individuals help protect the environment?",
-            "What do you think about climate change?",
-            "What should governments do to address environmental issues?"
-          ],
-          duration: 4
-        },
-        {
-          title: "Technology",
-          questions: [
-            "How has technology changed your life?",
-            "What are the advantages and disadvantages of social media?",
-            "Do you think people rely too much on technology?",
-            "How do you think technology will change in the future?"
-          ],
-          duration: 4
-        }
-      ]
-    },
-    {
-      id: 3,
-      title: "Academic Discussion - Advanced",
-      description: "Engage in complex academic discussions",
-      level: 'advanced',
-      timeLimit: 11,
-      parts: [
-        {
-          title: "Education Systems",
-          questions: [
-            "What are the main challenges facing education systems today?",
-            "How has online learning impacted education?",
-            "Should education focus more on practical skills or theoretical knowledge?",
-            "What role should technology play in education?"
-          ],
-          duration: 5
-        },
-        {
-          title: "Globalization",
-          questions: [
-            "How has globalization affected your country?",
-            "What are the benefits and drawbacks of cultural globalization?",
-            "How does globalization impact local businesses?",
-            "What is the future of globalization?"
-          ],
-          duration: 6
-        }
+        'What is the book about',
+        'When did you first read it',
+        'Why do you like it',
+        'Would you recommend it to others'
+      ],
+      expectedKeywords: [
+        'book', 'story', 'author', 'read', 'character', 'plot',
+        'interesting', 'favorite', 'recommend', 'impact'
       ]
     }
   ];
 
-  const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [audioChunks, setAudioChunks] = useState([]);
+  useEffect(() => {
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      
-      recorder.ondataavailable = (event) => {
-        setAudioChunks(current => [...current, event.data]);
+      recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join(' ');
+        
+        const words = transcript.toLowerCase().split(' ');
+        setSpokenWords(words);
+        
+        // Score words in real-time
+        const newScoredWords = {};
+        words.forEach((word, index) => {
+          if (currentTask?.expectedKeywords.includes(word)) {
+            newScoredWords[index] = 'correct';
+          } else {
+            newScoredWords[index] = 'incorrect';
+          }
+        });
+        setScoredWords(newScoredWords);
       };
 
-      recorder.start();
-      setMediaRecorder(recorder);
-      setRecording(true);
-    } catch (error) {
-      showNotification('Error accessing microphone', 'error');
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [currentTask]);
+
+  const startRecording = async () => {
+    const started = await recordingService.startRecording();
+    if (started) {
+      setIsRecording(true);
+      if (!currentTask) {
+        setCurrentTask(speakingTasks[0]);
+      }
+      try {
+        await callApi(async () => {
+          // Start speech recognition
+          recognitionRef.current?.start();
+        });
+      } catch (error) {
+        console.error('Error starting recording:', error);
+      }
     }
   };
 
   const stopRecording = async () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-      setRecording(false);
+    setIsRecording(false);
+    const result = await recordingService.stopRecording();
+    if (result) {
+      const { audioBlob, audioUrl } = result;
+      setAudioUrl(audioUrl);
       
-      const tracks = mediaRecorder.stream.getTracks();
-      tracks.forEach(track => track.stop());
-
-      setTimeout(async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        await processSpeaking(audioBlob);
-        setAudioChunks([]);
-      }, 100);
+      try {
+        // Generate feedback
+        const pronunciationFeedback = await getPronunciationScore(spokenWords, audioBlob);
+        setFeedback(pronunciationFeedback);
+        
+        // Calculate and save score
+        const score = pronunciationFeedback.overallScore;
+        addScore('speaking', score);
+        
+        await callApi(async () => {
+          return { score, feedback: pronunciationFeedback };
+        });
+      } catch (error) {
+        console.error('Error processing speaking test:', error);
+      }
     }
   };
 
-  const processSpeaking = async (audioBlob) => {
-    await callApi(
-      async () => {
-        const result = await aiService.analyzeSpeaking(
-          audioBlob, 
-          selectedTask.parts[activeStep]
-        );
-        if (activeStep === selectedTask.parts.length - 1) {
-          setShowResults(true);
-        } else {
-          setActiveStep(prev => prev + 1);
-        }
-        return result;
-      },
-      'Speaking analysis completed'
-    );
-  };
-
-  const handleTaskSelect = (task) => {
-    setSelectedTask(task);
-    setActiveStep(0);
-    setShowResults(false);
-    setAudioChunks([]);
-  };
-
-  const handleTimerComplete = () => {
-    if (recording) {
-      stopRecording();
-    }
+  const switchTask = () => {
+    const currentIndex = tasks.findIndex(task => task.id === currentTask?.id);
+    const nextIndex = (currentIndex + 1) % tasks.length;
+    setCurrentTask(tasks[nextIndex]);
+    setSpokenWords([]);
+    setScoredWords({});
   };
 
   return (
-    <Container>
+    <Container maxWidth="md">
       <Box sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Speaking Practice
+          IELTS Speaking Practice
         </Typography>
 
-        {!selectedTask ? (
-          <Grid container spacing={3}>
-            {speakingTasks.map((task) => (
-              <Grid item xs={12} md={4} key={task.id}>
-                <TaskCard
-                  title={task.title}
-                  description={task.description}
-                  level={task.level}
-                  timeLimit={task.timeLimit}
-                  onClick={() => handleTaskSelect(task)}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Box>
-            <Card sx={{ mb: 3 }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="h6">
-                    {selectedTask.title}
-                  </Typography>
-                  <Button 
-                    variant="outlined" 
-                    onClick={() => setSelectedTask(null)}
-                  >
-                    Choose Another Task
-                  </Button>
-                </Box>
-
-                <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
-                  {selectedTask.parts.map((part, index) => (
-                    <Step key={part.title}>
-                      <StepLabel>{part.title}</StepLabel>
-                    </Step>
-                  ))}
-                </Stepper>
-
-                {recording && (
-                  <Timer
-                    duration={selectedTask.parts[activeStep].duration * 60}
-                    onComplete={handleTimerComplete}
-                  />
-                )}
-
-                <Paper elevation={0} sx={{ p: 3, bgcolor: 'background.paper', mb: 3 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              {currentTask ? (
+                <>
                   <Typography variant="h6" gutterBottom>
-                    {selectedTask.parts[activeStep].title}
+                    {currentTask.title}
                   </Typography>
-                  <List>
-                    {selectedTask.parts[activeStep].questions.map((question, index) => (
-                      <ListItem key={index}>
-                        <ListItemIcon>
-                          <QuestionAnswerIcon color="primary" />
-                        </ListItemIcon>
-                        <ListItemText primary={question} />
-                      </ListItem>
+                  <Typography paragraph>
+                    {currentTask.description}
+                  </Typography>
+                  <Box sx={{ mb: 3 }}>
+                    {currentTask.parts.map((part, index) => (
+                      <Typography key={index} sx={{ mb: 1 }}>
+                        • {part}
+                      </Typography>
                     ))}
-                  </List>
-                </Paper>
+                  </Box>
+                </>
+              ) : (
+                <Typography>
+                  Click "Start Recording" to begin a speaking task.
+                </Typography>
+              )}
+            </Paper>
+          </Grid>
 
-                <RecordButton
-                  onStart={startRecording}
-                  onStop={stopRecording}
-                  disabled={showResults}
-                />
-              </CardContent>
-            </Card>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Box sx={{ mb: 3 }}>
+                {loading ? (
+                  <CircularProgress />
+                ) : (
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      color={isRecording ? "secondary" : "primary"}
+                      onClick={isRecording ? stopRecording : startRecording}
+                    >
+                      {isRecording ? "Stop Recording" : "Start Recording"}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={switchTask}
+                      disabled={isRecording}
+                    >
+                      Next Task
+                    </Button>
+                  </Box>
+                )}
+              </Box>
 
-            {showResults && (
-              <Card>
-                <CardContent>
-                  <ScoreDisplay
-                    title="Speaking Analysis"
-                    scores={{
-                      pronunciation: 85,
-                      fluency: 80,
-                      grammar: 75,
-                      vocabulary: 82
-                    }}
-                  />
-                </CardContent>
-              </Card>
-            )}
-          </Box>
-        )}
+              <Typography variant="h6" gutterBottom>
+                Your Speech:
+              </Typography>
+              <Box sx={{ lineHeight: 2 }}>
+                {spokenWords.map((word, index) => (
+                  <Word
+                    key={index}
+                    status={scoredWords[index]}
+                  >
+                    {word}
+                  </Word>
+                ))}
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
       </Box>
+
+      {audioUrl && <AudioPlayer audioUrl={audioUrl} />}
+      {feedback && <SpeakingFeedback feedback={feedback} />}
     </Container>
   );
 };

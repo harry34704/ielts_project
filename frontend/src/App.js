@@ -1,53 +1,38 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Container, CssBaseline, ThemeProvider } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './theme';
+import { ScoreProvider } from './context/ScoreContext';
+import { AppProvider } from './context/AppContext';
+
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Reading from './components/Reading';
 import Writing from './components/Writing';
 import Speaking from './components/Speaking';
 import History from './components/History';
-import LoadingOverlay from './components/common/LoadingOverlay';
-import Notification from './components/common/Notification';
-import { ScoreProvider } from './context/ScoreContext';
-import { AppProvider } from './context/AppContext';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
-
-const App = () => {
+function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppProvider>
         <ScoreProvider>
-          <BrowserRouter>
+          <Router>
             <Navbar />
-            <Container>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/reading" element={<Reading />} />
-                <Route path="/writing" element={<Writing />} />
-                <Route path="/speaking" element={<Speaking />} />
-                <Route path="/history" element={<History />} />
-              </Routes>
-            </Container>
-            <LoadingOverlay />
-            <Notification />
-          </BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/reading" element={<Reading />} />
+              <Route path="/writing" element={<Writing />} />
+              <Route path="/speaking" element={<Speaking />} />
+              <Route path="/history" element={<History />} />
+            </Routes>
+          </Router>
         </ScoreProvider>
       </AppProvider>
     </ThemeProvider>
   );
-};
+}
 
 export default App;
