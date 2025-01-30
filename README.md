@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,3 +69,67 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+=======
+# IELTS Practice Platform
+
+An AI-powered IELTS practice platform that helps users improve their speaking and writing skills through automated feedback and scoring.
+
+## Features
+
+- **Speaking Practice:**
+  - Real-time speech recognition
+  - AI-powered feedback on pronunciation and fluency
+  - Practice mode with sample questions
+  - Test mode with timed responses
+
+- **Writing Practice:**
+  - Task 1 and Task 2 practice
+  - Automated essay scoring
+  - Detailed feedback on grammar, vocabulary, and structure
+  - Progress tracking
+
+## Technology Stack
+
+### Backend
+- FastAPI (Python)
+- SQLAlchemy for database management
+- PyAudio for speech processing
+- OpenAI GPT for text analysis
+- Language Tool for grammar checking
+
+### Frontend
+- React.js
+- Material-UI for components
+- React Router for navigation
+- Axios for API calls
+
+## Setup Instructions
+
+### Prerequisites
+- Python 3.8+
+- Node.js 14+
+- npm or yarn
+- PostgreSQL (optional, SQLite included by default)
+
+### Backend Setup
+
+## Future Improvements
+
+1. Real-time video feedback for speaking practice
+2. Integration with additional LLMs for varied feedback
+3. Peer review system
+4. Mobile application
+5. Offline mode support
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+>>>>>>> d2610e2 (Initial commit)
